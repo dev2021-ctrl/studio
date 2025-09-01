@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { analyzeSymptomsAction, getPersonalizedAdviceAction } from './actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Message = {
   id: string;
@@ -21,15 +22,17 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [chatMode, setChatMode] = useState<'symptoms' | 'advice'>('symptoms');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (scrollAreaRef.current) {
+        scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
+    }
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]);
   
   useEffect(() => {
     setMessages([
@@ -139,49 +142,50 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)]">
+    <div className="flex flex-col h-full">
       <Tabs value={chatMode} onValueChange={(v) => setChatMode(v as 'symptoms' | 'advice')} className="mb-4">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="symptoms">Symptom Checker</TabsTrigger>
           <TabsTrigger value="advice">Personalized Advice</TabsTrigger>
         </TabsList>
       </Tabs>
-      <div className="flex-1 overflow-y-auto pr-4 space-y-6">
-        {messages.map((message) => (
-          <div key={message.id} className={cn('flex items-start gap-4', message.role === 'user' ? 'justify-end' : 'justify-start')}>
-            {message.role === 'assistant' && (
-              <Avatar className="w-8 h-8 border">
-                <AvatarFallback><Bot/></AvatarFallback>
-              </Avatar>
-            )}
-            <div
-              className={cn(
-                'max-w-[75%] rounded-lg p-3 text-sm',
-                message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
-              )}
-            >
-              {message.content}
+      <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
+        <div className="space-y-6 pb-4">
+            {messages.map((message) => (
+            <div key={message.id} className={cn('flex items-start gap-4', message.role === 'user' ? 'justify-end' : 'justify-start')}>
+                {message.role === 'assistant' && (
+                <Avatar className="w-8 h-8 border">
+                    <AvatarFallback><Bot/></AvatarFallback>
+                </Avatar>
+                )}
+                <div
+                className={cn(
+                    'max-w-[75%] rounded-lg p-3 text-sm',
+                    message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                )}
+                >
+                {message.content}
+                </div>
+                {message.role === 'user' && (
+                <Avatar className="w-8 h-8 border">
+                    <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
+                    <AvatarFallback><User /></AvatarFallback>
+                </Avatar>
+                )}
             </div>
-            {message.role === 'user' && (
-              <Avatar className="w-8 h-8 border">
-                 <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
-                 <AvatarFallback><User /></AvatarFallback>
-              </Avatar>
+            ))}
+            {isLoading && (
+                <div className="flex items-start gap-4 justify-start">
+                <Avatar className="w-8 h-8 border">
+                    <AvatarFallback><Bot/></AvatarFallback>
+                </Avatar>
+                <div className="bg-muted rounded-lg p-3">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                </div>
+                </div>
             )}
-          </div>
-        ))}
-         {isLoading && (
-            <div className="flex items-start gap-4 justify-start">
-              <Avatar className="w-8 h-8 border">
-                <AvatarFallback><Bot/></AvatarFallback>
-              </Avatar>
-              <div className="bg-muted rounded-lg p-3">
-                 <Loader2 className="h-5 w-5 animate-spin" />
-              </div>
-            </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+        </div>
+      </ScrollArea>
       <div className="mt-auto pt-4">
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
           <Input
