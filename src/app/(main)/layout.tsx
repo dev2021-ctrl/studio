@@ -39,7 +39,7 @@ export default function MainLayout({
 }) {
   return (
     <SidebarProvider>
-      <div className="min-h-screen">
+      <div className="flex min-h-screen w-full">
         <Sidebar>
           <SidebarHeader>
             <div className="flex items-center gap-2">
@@ -90,7 +90,7 @@ export default function MainLayout({
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
-        <SidebarInset>
+        <div className="flex flex-1 flex-col">
           <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
             <SidebarTrigger className="md:hidden" />
             <div className="w-full flex-1">
@@ -119,7 +119,7 @@ export default function MainLayout({
           <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 h-[calc(100vh-60px)]">
             {children}
           </main>
-        </SidebarInset>
+        </div>
       </div>
     </SidebarProvider>
   );
